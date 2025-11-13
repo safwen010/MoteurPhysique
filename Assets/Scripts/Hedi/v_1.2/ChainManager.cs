@@ -44,6 +44,21 @@ namespace ChainSim
     public float bottomBreakTimeout = 1.5f; // seconds to reach max while forcing
     public bool debugTension = false; // logs bottom joint tension
 
+        [Header("Oscillation")]
+        // Apply a horizontal oscillation force to the chain (for swinging)
+        public bool enableOscillation = false;
+        public Vector3 oscillationDirection = Vector3.right; // world-space direction
+        public float oscillationAmplitude = 50f; // peak force (N)
+        public float oscillationFrequency = 1f; // Hz
+        [Range(0f, 1f)] public float oscillationAlpha = 1f; // blend 0..1 of oscillation influence
+        public bool applyOscillationToAll = false; // if true apply to every fragment; otherwise only bottom anchor
+
+        [Header("Stabilization")]
+        // Controls how quickly fragments try to return to an upright (vertical) orientation.
+        [Range(0f, 1f)] public float returnToVerticalAlpha = 0.5f; // 0: no correction, 1: full correction
+        public float returnToVerticalStiffness = 12f; // torque scale applied per-radian of tilt
+        public bool stabilizeRotation = true; // enable/disable this stabilization
+
     private List<ChainDistanceConstraint> constraints = new List<ChainDistanceConstraint>();
     private ChainDistanceConstraint bottomJoint;
     private Dictionary<ChainDistanceConstraint, float> normalBreakForces = new Dictionary<ChainDistanceConstraint, float>();
@@ -176,6 +191,28 @@ namespace ChainSim
                         F += Fextra;
                     }
                     bottom.AddForce(new Vector3(0, -F, 0));
+
+                    // Optional horizontal oscillation force (sinusoidal)
+                    if (enableOscillation && oscillationAlpha > 0f)
+                    {
+                        // compute instantaneous oscillation force (world-space)
+                        float osc = Mathf.Sin(2f * Mathf.PI * oscillationFrequency * Time.timeSinceLevelLoad);
+                        Vector3 hForce = oscillationDirection.normalized * (oscillationAmplitude * osc * Mathf.Clamp01(oscillationAlpha));
+
+                        if (applyOscillationToAll)
+                        {
+                            // apply to each fragment except top anchor
+                            foreach (var f in all)
+                            {
+                                if (f == generator.topAnchor) continue;
+                                f.AddForce(hForce);
+                            }
+                        }
+                        else
+                        {
+                            bottom.AddForce(hForce);
+                        }
+                    }
                 }
             }
 
@@ -197,6 +234,35 @@ namespace ChainSim
                 foreach (var c in constraints)
                 {
                     if (!c.broken) c.Solve(dt);
+                }
+            }
+
+            // Optional stabilization: apply corrective torque towards upright (vertical)
+            if (stabilizeRotation && returnToVerticalAlpha > 0f)
+            {
+                float alpha = Mathf.Clamp01(returnToVerticalAlpha);
+                float k = returnToVerticalStiffness * alpha;
+                for (int i = 0; i < all.Length; i++)
+                {
+                    var f = all[i];
+                    if (f == generator.topAnchor) continue; // top anchor is fixed
+
+                    // current up vector in world space
+                    Vector3 currUp = f.transform.up;
+                    Vector3 desiredUp = Vector3.up;
+
+                    // axis-angle between currUp and desiredUp
+                    Vector3 axis = Vector3.Cross(currUp, desiredUp);
+                    float sinA = axis.magnitude;
+                    if (sinA < 1e-6f) continue;
+                    float cosA = Mathf.Clamp(Vector3.Dot(currUp, desiredUp), -1f, 1f);
+                    float angle = Mathf.Atan2(sinA, cosA); // angle in radians
+                    Vector3 axisDir = axis / sinA;
+
+                    // corrective torque (proportional to angle, scaled by stiffness and fragment mass)
+                    Vector3 correctiveTorque = axisDir * (angle * k * f.mass);
+                    // apply to fragment's torque accumulator
+                    f.torque += correctiveTorque;
                 }
             }
 

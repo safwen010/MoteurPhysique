@@ -119,6 +119,104 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &217814211
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 217814214}
+  - component: {fileID: 217814213}
+  - component: {fileID: 217814212}
+  m_Layer: 0
+  m_Name: Chain Manager alfa 0.5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &217814212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 217814211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aec77ac965e67374b961f18ef18169dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  generator: {fileID: 217814213}
+  timeStep: 0.016
+  gravity: {x: 0, y: -9.81, z: 0}
+  airDamping: 0.9754
+  groundY: 0
+  groundRestitution: 0.2
+  groundFriction: 0.6
+  rollingResistance: 0.12
+  restLengthScale: 1
+  erp: 0.2
+  cfm: 0
+  breakForce: 250
+  damageGain: 0.5
+  damageDecay: 0.98
+  biasBreakAtBottom: 1
+  bottomBreakMultiplier: 0.6
+  bottomBreaksFirst: 1
+  othersPreBreakMultiplier: 3
+  solverIterations: 6
+  pullForce: 200
+  pullRampTime: 1
+  forceBottomBreak: 1
+  pullForceMax: 800
+  bottomBreakTimeout: 1.5
+  debugTension: 1
+  enableOscillation: 0
+  oscillationDirection: {x: 1, y: 0, z: 0}
+  oscillationAmplitude: 50
+  oscillationFrequency: 1
+  oscillationAlpha: 1
+  applyOscillationToAll: 0
+  returnToVerticalAlpha: 0.5
+  returnToVerticalStiffness: 12
+  stabilizeRotation: 1
+--- !u!114 &217814213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 217814211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d4e5c4a977328d4a8bcb877a4411419, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  linkCount: 16
+  linkSize: {x: 0.2, y: 0.4, z: 0.2}
+  linkMass: 0.5
+  gap: 0.02
+  anchorSize: {x: 0.5, y: 0.5, z: 0.5}
+  anchorMass: 2
+  links: []
+--- !u!4 &217814214
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 217814211}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.06, y: 3.24, z: -1.250617}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -205,13 +303,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.27916008, y: -0, z: -0, w: 0.9602446}
+  m_LocalPosition: {x: 0, y: 4.69, z: -7.65}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 32.42, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -389,7 +487,7 @@ GameObject:
   - component: {fileID: 424982541}
   - component: {fileID: 424982540}
   m_Layer: 0
-  m_Name: Chain Manager
+  m_Name: Chain Manager alfa 0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -410,7 +508,7 @@ MonoBehaviour:
   generator: {fileID: 424982541}
   timeStep: 0.016
   gravity: {x: 0, y: -9.81, z: 0}
-  airDamping: 0.995
+  airDamping: 0.99999
   groundY: 0
   groundRestitution: 0.2
   groundFriction: 0.6
@@ -419,7 +517,7 @@ MonoBehaviour:
   erp: 0.2
   cfm: 0
   breakForce: 250
-  damageGain: 0.6
+  damageGain: 0
   damageDecay: 0.98
   biasBreakAtBottom: 1
   bottomBreakMultiplier: 0.6
@@ -432,6 +530,15 @@ MonoBehaviour:
   pullForceMax: 800
   bottomBreakTimeout: 1.5
   debugTension: 1
+  enableOscillation: 0
+  oscillationDirection: {x: 1, y: 0, z: 0}
+  oscillationAmplitude: 50
+  oscillationFrequency: 1
+  oscillationAlpha: 1
+  applyOscillationToAll: 0
+  returnToVerticalAlpha: 0.5
+  returnToVerticalStiffness: 12
+  stabilizeRotation: 1
 --- !u!114 &424982541
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -460,7 +567,203 @@ Transform:
   m_GameObject: {fileID: 424982539}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.14832594, y: 3.24, z: -1.250617}
+  m_LocalPosition: {x: -3.27, y: 3.24, z: -1.250617}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &451070739
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 451070742}
+  - component: {fileID: 451070741}
+  - component: {fileID: 451070740}
+  m_Layer: 0
+  m_Name: Chain Manager alfa 2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &451070740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451070739}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aec77ac965e67374b961f18ef18169dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  generator: {fileID: 451070741}
+  timeStep: 0.016
+  gravity: {x: 0, y: -9.81, z: 0}
+  airDamping: 0.9
+  groundY: 0
+  groundRestitution: 0.2
+  groundFriction: 0.6
+  rollingResistance: 0.12
+  restLengthScale: 1
+  erp: 0.2
+  cfm: 0
+  breakForce: 250
+  damageGain: 2
+  damageDecay: 0.98
+  biasBreakAtBottom: 1
+  bottomBreakMultiplier: 0.6
+  bottomBreaksFirst: 1
+  othersPreBreakMultiplier: 3
+  solverIterations: 6
+  pullForce: 200
+  pullRampTime: 1
+  forceBottomBreak: 1
+  pullForceMax: 800
+  bottomBreakTimeout: 1.5
+  debugTension: 1
+  enableOscillation: 0
+  oscillationDirection: {x: 1, y: 0, z: 0}
+  oscillationAmplitude: 50
+  oscillationFrequency: 1
+  oscillationAlpha: 1
+  applyOscillationToAll: 0
+  returnToVerticalAlpha: 0.5
+  returnToVerticalStiffness: 12
+  stabilizeRotation: 1
+--- !u!114 &451070741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451070739}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d4e5c4a977328d4a8bcb877a4411419, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  linkCount: 16
+  linkSize: {x: 0.2, y: 0.4, z: 0.2}
+  linkMass: 0.5
+  gap: 0.02
+  anchorSize: {x: 0.5, y: 0.5, z: 0.5}
+  anchorMass: 2
+  links: []
+--- !u!4 &451070742
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451070739}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.53, y: 3.24, z: -1.250617}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &798570105
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 798570108}
+  - component: {fileID: 798570107}
+  - component: {fileID: 798570106}
+  m_Layer: 0
+  m_Name: Chain Manager alfa 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &798570106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 798570105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aec77ac965e67374b961f18ef18169dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  generator: {fileID: 798570107}
+  timeStep: 0.016
+  gravity: {x: 0, y: -9.81, z: 0}
+  airDamping: 0.9503
+  groundY: 0
+  groundRestitution: 0.2
+  groundFriction: 0.6
+  rollingResistance: 0.12
+  restLengthScale: 1
+  erp: 0.2
+  cfm: 0
+  breakForce: 250
+  damageGain: 1
+  damageDecay: 0.98
+  biasBreakAtBottom: 1
+  bottomBreakMultiplier: 0.6
+  bottomBreaksFirst: 1
+  othersPreBreakMultiplier: 3
+  solverIterations: 6
+  pullForce: 200
+  pullRampTime: 1
+  forceBottomBreak: 1
+  pullForceMax: 800
+  bottomBreakTimeout: 1.5
+  debugTension: 1
+  enableOscillation: 0
+  oscillationDirection: {x: 1, y: 0, z: 0}
+  oscillationAmplitude: 50
+  oscillationFrequency: 1
+  oscillationAlpha: 1
+  applyOscillationToAll: 0
+  returnToVerticalAlpha: 0.5
+  returnToVerticalStiffness: 12
+  stabilizeRotation: 1
+--- !u!114 &798570107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 798570105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d4e5c4a977328d4a8bcb877a4411419, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  linkCount: 16
+  linkSize: {x: 0.2, y: 0.4, z: 0.2}
+  linkMass: 0.5
+  gap: 0.02
+  anchorSize: {x: 0.5, y: 0.5, z: 0.5}
+  anchorMass: 2
+  links: []
+--- !u!4 &798570108
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 798570105}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.13, y: 3.24, z: -1.250617}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -661,3 +964,6 @@ SceneRoots:
   - {fileID: 832575519}
   - {fileID: 1942411666}
   - {fileID: 424982542}
+  - {fileID: 217814214}
+  - {fileID: 798570108}
+  - {fileID: 451070742}

@@ -78,8 +78,20 @@ namespace ChainSim
             var mr = go.GetComponent<MeshRenderer>();
             if (mr)
             {
-                var mat = new Material(Shader.Find("Standard"));
-                mat.color = color; mr.sharedMaterial = mat;
+                // Create material with a shader that exists in the project (fallback for URP)
+                Shader sh = Shader.Find("Standard");
+                if (sh == null) sh = Shader.Find("Universal Render Pipeline/Lit");
+                if (sh == null) sh = Shader.Find("Sprites/Default");
+                Material mat = null;
+                if (sh != null) mat = new Material(sh);
+                else mat = new Material(Shader.Find("Hidden/InternalErrorShader"));
+
+                // Set color using property name used by common shaders
+                if (mat.HasProperty("_Color")) mat.SetColor("_Color", color);
+                else if (mat.HasProperty("color")) mat.SetColor("color", color);
+
+                // Assign instance material so each link can have its own color
+                mr.material = mat;
             }
             return frag;
         }
