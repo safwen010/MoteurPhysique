@@ -250,8 +250,29 @@ public class FragmentPhysics : MonoBehaviour
         // Update rotation using proper quaternion rotation (ALWAYS update rotation)
         if (angularVelocity.magnitude > 0.01f)
         {
-            Quaternion deltaRotation = Quaternion.Euler(angularVelocity * deltaTime * Mathf.Rad2Deg);
-            transform.rotation = deltaRotation * transform.rotation;
+            // 1.  Replace the single quaternion multiplication you had for delta-rotation
+            //     (inside UpdatePhysics) with this handmade 3-step Euler integration:
+
+            // — 1.a  convert angular velocity → axis/angle
+            Vector3 axis = angularVelocity.normalized;
+            float angleRad = angularVelocity.magnitude * deltaTime;
+
+            // — 1.b  build the rotation matrix ourselves (Rodrigues)
+            float c = Mathf.Cos(angleRad);
+            float s = Mathf.Sin(angleRad);
+            float omc = 1f - c;
+            float x = axis.x, y = axis.y, z = axis.z;
+
+            Matrix4x4 R = Matrix4x4.zero;
+            R[0, 0] = c + x * x * omc; R[0, 1] = x * y * omc - z * s; R[0, 2] = x * z * omc + y * s;
+            R[1, 0] = y * x * omc + z * s; R[1, 1] = c + y * y * omc; R[1, 2] = y * z * omc - x * s;
+            R[2, 0] = z * x * omc - y * s; R[2, 1] = z * y * omc + x * s; R[2, 2] = c + z * z * omc;
+            R[3, 3] = 1f;
+
+            // — 1.c  apply it to the current orientation
+            Matrix4x4 M = Matrix4x4.TRS(Vector3.zero, transform.rotation, Vector3.one);
+            M = R * M;                                    // rotate
+            transform.rotation = Quaternion.LookRotation(M.GetColumn(2), M.GetColumn(1)); // back to Unity rot
         }
 
         // Ground collision using mesh vertices (ALWAYS check for collision)

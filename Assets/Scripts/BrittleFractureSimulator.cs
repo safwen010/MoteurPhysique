@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
@@ -202,32 +202,33 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
 
     void UpdateSimulation(float deltaTime)
     {
-        // Update projectile
+        // ----------  projectile update  ----------
         if (projectilePhysics != null && !projectilePhysics.collided)
         {
             projectilePhysics.UpdatePhysics(deltaTime);
 
-            // Check for collision with blue cube using mesh-based detection
-            // Use the actual bounds from the projectile's mesh instead of hardcoded size
             float projectileRadius = GetProjectileRadius();
+
+            // Build the cube’s rotation matrix ourselves
+            Matrix4x4 cubeRotMatrix = Matrix4x4.TRS(Vector3.zero, blueCube.rotation, Vector3.one);
+
             if (CheckMeshCollision(projectilePhysics.transform.position, projectileRadius,
-                                 blueCube.position, blueCube.localScale * 0.5f, blueCube.rotation))
+                                   blueCube.position, blueCube.localScale * 0.5f,
+                                   cubeRotMatrix))   // <- matrix, not quaternion
             {
                 OnImpact();
                 projectilePhysics.collided = true;
             }
         }
 
-        // Update active fragments
+        // ----------  active fragments  ----------
         foreach (FragmentPhysics fragment in fragments)
         {
             if (fragment.gameObject.activeInHierarchy)
-            {
                 fragment.UpdatePhysics(deltaTime);
-            }
         }
 
-        // Update red beam based on nearby fragments
+        // ----------  red beam reaction  ----------
         UpdateRedBeam();
     }
 
@@ -237,22 +238,25 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
         return yellowProjectile.localScale.x * 0.5f;
     }
 
-    bool CheckMeshCollision(Vector3 spherePos, float sphereRadius, Vector3 cubePos, Vector3 cubeHalfExtents, Quaternion cubeRotation)
+    bool CheckMeshCollision(
+    Vector3 spherePos, float sphereRadius,
+    Vector3 cubePos, Vector3 cubeHalfExtents,
+    Matrix4x4 cubeRotMat)   // <= pass the matrix you already build
     {
-        // Transform sphere position to cube's local space
-        Vector3 localSpherePos = Quaternion.Inverse(cubeRotation) * (spherePos - cubePos);
+        // inverse rotation = transpose of the 3×3 part
+        Matrix4x4 cubeInv = cubeRotMat.transpose;
 
-        // Find the closest point on the cube to the sphere
-        Vector3 closestPoint = new Vector3(
+        // sphere → cube local space
+        Vector3 localSpherePos = cubeInv.MultiplyPoint3x4(spherePos - cubePos);
+
+        // closest point on box
+        Vector3 closest = new Vector3(
             Mathf.Clamp(localSpherePos.x, -cubeHalfExtents.x, cubeHalfExtents.x),
             Mathf.Clamp(localSpherePos.y, -cubeHalfExtents.y, cubeHalfExtents.y),
             Mathf.Clamp(localSpherePos.z, -cubeHalfExtents.z, cubeHalfExtents.z)
         );
 
-        // Calculate distance between sphere center and closest point
-        float distance = Vector3.Distance(localSpherePos, closestPoint);
-
-        return distance <= sphereRadius;
+        return Vector3.Distance(localSpherePos, closest) <= sphereRadius;
     }
 
     void OnImpact()
