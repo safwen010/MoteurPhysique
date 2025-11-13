@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+using FractureSim;
+
 /// <summary>
 /// Manages constrained rigid body dynamics simulation
 /// Pure physics implementation - no Unity physics engine

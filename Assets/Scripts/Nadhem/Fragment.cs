@@ -1,4 +1,5 @@
 using UnityEngine;
+using FractureSim;
 
 /// <summary>
 /// Rigid body fragment with complete 6-DOF physics
