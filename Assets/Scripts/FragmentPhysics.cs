@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-// Interface for all fragment simulators
 public interface IFragmentSimulator
 {
     List<FragmentPhysics> GetAllFragments();
@@ -37,13 +36,10 @@ public class FragmentPhysics : MonoBehaviour
     private float timeGrounded = 0f;
     private Bounds meshBounds;
 
-    // Generic SetSimulator method that works with any simulator implementing IFragmentSimulator
     public void SetSimulator(IFragmentSimulator sim)
     {
         simulator = sim;
     }
-
-    // Specific methods for convenience (optional)
     public void SetSimulator(BrittleFractureSimulator sim)
     {
         simulator = sim;
@@ -234,30 +230,22 @@ public class FragmentPhysics : MonoBehaviour
             ApplyStabilization(deltaTime);
         }
 
-        // Apply gravity (always apply gravity, even when grounded)
         if (!isGrounded)
         {
             velocity.y += gravity * deltaTime;
         }
 
-        // Apply air resistance
         velocity *= airResistance;
         angularVelocity *= airResistance;
 
-        // Update position (ALWAYS update position, even when grounded)
         transform.position += velocity * deltaTime;
 
-        // Update rotation using proper quaternion rotation (ALWAYS update rotation)
         if (angularVelocity.magnitude > 0.01f)
         {
-            // 1.  Replace the single quaternion multiplication you had for delta-rotation
-            //     (inside UpdatePhysics) with this handmade 3-step Euler integration:
-
-            // — 1.a  convert angular velocity → axis/angle
+            
             Vector3 axis = angularVelocity.normalized;
             float angleRad = angularVelocity.magnitude * deltaTime;
 
-            // — 1.b  build the rotation matrix ourselves (Rodrigues)
             float c = Mathf.Cos(angleRad);
             float s = Mathf.Sin(angleRad);
             float omc = 1f - c;
@@ -269,16 +257,13 @@ public class FragmentPhysics : MonoBehaviour
             R[2, 0] = z * x * omc - y * s; R[2, 1] = z * y * omc + x * s; R[2, 2] = c + z * z * omc;
             R[3, 3] = 1f;
 
-            // — 1.c  apply it to the current orientation
             Matrix4x4 M = Matrix4x4.TRS(Vector3.zero, transform.rotation, Vector3.one);
             M = R * M;                                    // rotate
             transform.rotation = Quaternion.LookRotation(M.GetColumn(2), M.GetColumn(1)); // back to Unity rot
         }
 
-        // Ground collision using mesh vertices (ALWAYS check for collision)
         CheckGroundCollision();
 
-        // Check for fragment-to-fragment collisions
         if (simulator != null)
         {
             CheckFragmentCollisions();
@@ -308,13 +293,11 @@ public class FragmentPhysics : MonoBehaviour
 
     bool CheckFragmentCollision(FragmentPhysics other)
     {
-        // Simple sphere-sphere collision check for performance
         Vector3 toOther = other.transform.position - transform.position;
         float combinedRadius = GetBoundingSphereRadius() + other.GetBoundingSphereRadius();
 
         if (toOther.sqrMagnitude < combinedRadius * combinedRadius)
         {
-            // More detailed check using bounds
             Bounds myWorldBounds = GetWorldBounds();
             Bounds otherWorldBounds = other.GetWorldBounds();
 
@@ -331,28 +314,22 @@ public class FragmentPhysics : MonoBehaviour
 
         if (penetration > 0)
         {
-            // Separate the fragments
             Vector3 separation = collisionNormal * penetration * 0.5f;
             transform.position += separation;
             other.transform.position -= separation;
 
-            // Calculate relative velocity
             Vector3 relativeVelocity = velocity - other.velocity;
             float velocityAlongNormal = Vector3.Dot(relativeVelocity, collisionNormal);
 
-            // Only resolve if objects are moving towards each other
             if (velocityAlongNormal < 0)
             {
-                // Calculate impulse
                 float impulseMagnitude = -(1 + fragmentRestitution) * velocityAlongNormal;
-                impulseMagnitude /= 2; // Simplified mass (assuming equal mass)
+                impulseMagnitude /= 2;
 
-                // Apply impulse
                 Vector3 impulse = impulseMagnitude * collisionNormal;
                 velocity += impulse;
                 other.velocity -= impulse;
 
-                // Add some angular velocity from collision
                 angularVelocity += Vector3.Cross(collisionNormal, impulse) * 0.1f;
                 other.angularVelocity += Vector3.Cross(-collisionNormal, -impulse) * 0.1f;
             }
@@ -367,7 +344,6 @@ public class FragmentPhysics : MonoBehaviour
         if (!myBounds.Intersects(otherBounds))
             return 0f;
 
-        // Calculate penetration depth
         Vector3 direction = other.transform.position - transform.position;
         Vector3 penetration = Vector3.zero;
 
@@ -397,40 +373,32 @@ public class FragmentPhysics : MonoBehaviour
 
     void ApplyStabilization(float deltaTime)
     {
-        // Only stabilize cubes (spheres and cylinders don't need it)
         if (GetPrimitiveType() != PrimitiveType.Cube) return;
 
-        // Get current up vector and target up vector (world up)
         Vector3 currentUp = transform.up;
         Vector3 targetUp = Vector3.up;
 
-        // Calculate the rotation needed to align with world up
         float angle = Vector3.Angle(currentUp, targetUp);
 
-        if (angle > 5f) // Only stabilize if significantly tilted
+        if (angle > 5f)
         {
-            // Calculate rotation axis
             Vector3 rotationAxis = Vector3.Cross(currentUp, targetUp).normalized;
 
-            // Apply stabilizing torque
             float torqueStrength = stabilizationTorque * (angle / 90f);
             angularVelocity += rotationAxis * torqueStrength * deltaTime;
 
-            // Dampen existing angular velocity
             angularVelocity *= 0.95f;
         }
     }
 
     void CheckGroundCollision()
     {
-        // Double safety check
         if (!verticesInitialized || meshVertices == null || meshVertices.Length == 0)
         {
             PrecalculateMeshVertices();
             return;
         }
 
-        // SIMPLE APPROACH: Check if any vertex is below ground level
         CheckSimpleGroundCollision();
     }
 
@@ -440,7 +408,6 @@ public class FragmentPhysics : MonoBehaviour
         float lowestPoint = float.MaxValue;
         int verticesTouching = 0;
 
-        // Find the lowest point and count vertices touching ground
         foreach (Vector3 vertex in meshVertices)
         {
             Vector3 worldVertex = transform.TransformPoint(vertex);
@@ -455,8 +422,6 @@ public class FragmentPhysics : MonoBehaviour
             }
         }
 
-        // Consider grounded if we have significant contact with the ground
-        // For cubes: at least 2 vertices touching, for spheres/cylinders: just check lowest point
         bool shouldBeGrounded = false;
 
         if (GetPrimitiveType() == PrimitiveType.Cube)
@@ -472,25 +437,20 @@ public class FragmentPhysics : MonoBehaviour
         {
             if (!wasGrounded)
             {
-                // First time becoming grounded - apply collision response
                 float penetration = groundY - lowestPoint;
                 if (penetration > 0)
                 {
                     transform.position += Vector3.up * penetration;
                 }
 
-                // Bounce with restitution
                 velocity.y = -velocity.y * groundRestitution;
 
-                // Apply friction
                 velocity.x *= groundFriction;
                 velocity.z *= groundFriction;
 
-                // Reduce angular velocity on ground contact
                 angularVelocity *= 0.7f;
             }
 
-            // When grounded, zero out vertical velocity and apply continuous friction
             if (Mathf.Abs(velocity.y) < 0.1f)
             {
                 velocity.y = 0f;
@@ -503,13 +463,11 @@ public class FragmentPhysics : MonoBehaviour
             isGrounded = false;
         }
 
-        // Additional check: if we're penetrating the ground, push up regardless of grounded state
         if (lowestPoint < groundY - 0.01f)
         {
             float penetration = groundY - lowestPoint;
             transform.position += Vector3.up * penetration * 0.5f;
 
-            // Small bounce to prevent sticking
             if (velocity.y < 0)
             {
                 velocity.y = -velocity.y * 0.2f;
@@ -539,7 +497,6 @@ public class FragmentPhysics : MonoBehaviour
             PrecalculateMeshVertices();
         }
 
-        // Draw mesh vertices
         Gizmos.color = isGrounded ? Color.green : Color.red;
         Vector3[] worldVertices = GetWorldVertices();
         foreach (Vector3 vertex in worldVertices)
@@ -547,16 +504,13 @@ public class FragmentPhysics : MonoBehaviour
             Gizmos.DrawSphere(vertex, 0.02f);
         }
 
-        // Draw bounding box
         Gizmos.color = Color.magenta;
         Bounds worldBounds = GetWorldBounds();
         Gizmos.DrawWireCube(worldBounds.center, worldBounds.size);
 
-        // Draw ground level
         Gizmos.color = Color.yellow;
         Gizmos.DrawLine(new Vector3(-5, groundY, 0), new Vector3(5, groundY, 0));
 
-        // Draw velocity vector
         Gizmos.color = Color.blue;
         Gizmos.DrawRay(transform.position, velocity * 0.1f);
     }
@@ -578,7 +532,6 @@ public class FragmentPhysics : MonoBehaviour
         return new Bounds((min + max) * 0.5f, max - min);
     }
 
-    // Public method to force vertex initialization
     public void InitializeVertices()
     {
         PrecalculateMeshVertices();

@@ -11,12 +11,12 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
 
     [Header("Fracture Parameters")]
     [Range(0f, 2f)]
-    public float alpha = 1.0f; // Energy multiplier for fragments
+    public float alpha = 1.0f;
     public float fractureThreshold = 2.0f;
     public float baseFragmentSpeed = 5.0f;
 
     [Header("Visual Settings")]
-    public Color groundColor = new Color(1f, 0.8f, 0.2f); // Mustard yellow
+    public Color groundColor = new Color(1f, 0.8f, 0.2f);
     public Color beamColor = Color.red;
     public Color cubeColor = Color.blue;
     public Color projectileColor = Color.yellow;
@@ -37,37 +37,23 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
 
     void SetupScene()
     {
-        // Set up ground
         ground.GetComponent<Renderer>().material.color = groundColor;
-
-        // Set up red beam
         redBeam.GetComponent<Renderer>().material.color = beamColor;
-
-        // Set up blue cube
         blueCube.GetComponent<Renderer>().material.color = cubeColor;
-
-        // Set up yellow projectile
         yellowProjectile.GetComponent<Renderer>().material.color = projectileColor;
-
-        // Position objects according to specification
         redBeam.position = new Vector3(2f, 0.5f, 0f);
         blueCube.position = new Vector3(0f, 0.5f, 0f);
         yellowProjectile.position = new Vector3(-3f, 0.5f, 0f);
-
-        // Remove ALL Unity physics components
         RemoveAllUnityPhysics();
     }
 
     void RemoveAllUnityPhysics()
     {
-        // Remove colliders from all objects
         Collider[] colliders = FindObjectsOfType<Collider>();
         foreach (Collider col in colliders)
         {
             DestroyImmediate(col);
         }
-
-        // Remove rigidbodies from all objects
         Rigidbody[] rigidbodies = FindObjectsOfType<Rigidbody>();
         foreach (Rigidbody rb in rigidbodies)
         {
@@ -77,7 +63,6 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
 
     void PrecalculateCubeVertices()
     {
-        // Precalculate cube vertices in local space
         Vector3 halfSize = blueCube.localScale * 0.5f;
         blueCubeVertices = new Vector3[]
         {
@@ -94,10 +79,7 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
 
     void CreateFragments()
     {
-        // Create fragments for blue cube (will be activated on impact)
         CreateCubeFragments(blueCube.position, cubeColor);
-
-        // Create secondary green fragments
         CreateSecondaryFragments(blueCube.position + Vector3.up, fragmentColor);
     }
 
@@ -111,26 +93,22 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
             GameObject fragmentObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
             fragmentObj.name = $"CubeFragment_{i}";
 
-            // Remove ALL Unity components that might interfere
             DestroyImmediate(fragmentObj.GetComponent<Collider>());
             DestroyImmediate(fragmentObj.GetComponent<BoxCollider>());
 
             fragmentObj.transform.position = position + Random.insideUnitSphere * 0.3f;
             fragmentObj.transform.localScale = Vector3.one * size;
 
-            // Create new material instance
             Renderer renderer = fragmentObj.GetComponent<Renderer>();
             renderer.material = new Material(renderer.material);
             renderer.material.color = color;
 
-            // Add our custom physics component - NO NEED to set fragmentSize or meshType
             FragmentPhysics fragment = fragmentObj.AddComponent<FragmentPhysics>();
             fragment.groundY = ground.position.y + ground.localScale.y * 0.5f;
             fragment.SetSimulator(this);
-            // REMOVED: fragment.fragmentSize and fragment.meshType assignments
 
             fragments.Add(fragment);
-            fragmentObj.SetActive(false); // Start inactive
+            fragmentObj.SetActive(false);
         }
     }
 
@@ -144,7 +122,6 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
             GameObject fragmentObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             fragmentObj.name = $"SecondaryFragment_{i}";
 
-            // Remove ALL Unity components
             DestroyImmediate(fragmentObj.GetComponent<Collider>());
             DestroyImmediate(fragmentObj.GetComponent<SphereCollider>());
 
@@ -158,7 +135,6 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
             FragmentPhysics fragment = fragmentObj.AddComponent<FragmentPhysics>();
             fragment.groundY = ground.position.y + ground.localScale.y * 0.5f;
             fragment.SetSimulator(this);
-            // REMOVED: fragment.fragmentSize and fragment.meshType assignments
 
             fragments.Add(fragment);
             fragmentObj.SetActive(false);
@@ -184,7 +160,6 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
         simulationStarted = true;
         simulationTime = 0f;
 
-        // Launch projectile toward blue cube
         LaunchProjectile();
     }
 
@@ -197,59 +172,47 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
         projectilePhysics.velocity = direction * speed;
         projectilePhysics.groundY = ground.position.y + ground.localScale.y * 0.5f;
         projectilePhysics.SetSimulator(this);
-        // REMOVED: projectilePhysics.fragmentSize and meshType assignments
     }
 
     void UpdateSimulation(float deltaTime)
     {
-        // ----------  projectile update  ----------
         if (projectilePhysics != null && !projectilePhysics.collided)
         {
             projectilePhysics.UpdatePhysics(deltaTime);
 
             float projectileRadius = GetProjectileRadius();
 
-            // Build the cube’s rotation matrix ourselves
             Matrix4x4 cubeRotMatrix = Matrix4x4.TRS(Vector3.zero, blueCube.rotation, Vector3.one);
 
             if (CheckMeshCollision(projectilePhysics.transform.position, projectileRadius,
                                    blueCube.position, blueCube.localScale * 0.5f,
-                                   cubeRotMatrix))   // <- matrix, not quaternion
+                                   cubeRotMatrix)) 
             {
                 OnImpact();
                 projectilePhysics.collided = true;
             }
         }
-
-        // ----------  active fragments  ----------
         foreach (FragmentPhysics fragment in fragments)
         {
             if (fragment.gameObject.activeInHierarchy)
                 fragment.UpdatePhysics(deltaTime);
         }
-
-        // ----------  red beam reaction  ----------
         UpdateRedBeam();
     }
 
     float GetProjectileRadius()
     {
-        // Calculate radius based on the projectile's actual scale
         return yellowProjectile.localScale.x * 0.5f;
     }
 
     bool CheckMeshCollision(
     Vector3 spherePos, float sphereRadius,
     Vector3 cubePos, Vector3 cubeHalfExtents,
-    Matrix4x4 cubeRotMat)   // <= pass the matrix you already build
+    Matrix4x4 cubeRotMat)  
     {
-        // inverse rotation = transpose of the 3×3 part
         Matrix4x4 cubeInv = cubeRotMat.transpose;
-
-        // sphere → cube local space
         Vector3 localSpherePos = cubeInv.MultiplyPoint3x4(spherePos - cubePos);
 
-        // closest point on box
         Vector3 closest = new Vector3(
             Mathf.Clamp(localSpherePos.x, -cubeHalfExtents.x, cubeHalfExtents.x),
             Mathf.Clamp(localSpherePos.y, -cubeHalfExtents.y, cubeHalfExtents.y),
@@ -261,11 +224,9 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
 
     void OnImpact()
     {
-        // Hide blue cube and projectile
         blueCube.gameObject.SetActive(false);
         yellowProjectile.gameObject.SetActive(false);
 
-        // Activate and launch fragments
         Vector3 impactPoint = blueCube.position;
         ActivateFragments(impactPoint);
 
@@ -288,14 +249,12 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
                 if (direction.magnitude < 0.1f)
                     direction = Random.onUnitSphere;
 
-                // MINIMUM VELOCITY FIX: Always give fragments some initial movement
-                float minSpeed = 0.3f; // Minimum speed to prevent static fragments
+                float minSpeed = 0.3f; 
                 float alphaSpeed = baseFragmentSpeed * alpha * Random.Range(0.8f, 1.2f);
                 float speed = Mathf.Max(alphaSpeed, minSpeed);
 
                 fragment.velocity = direction * speed;
 
-                // MINIMUM ROTATION FIX: Always give fragments some initial rotation
                 float minRotation = 0.5f;
                 float alphaRotation = alpha * 5.0f;
                 float rotationStrength = Mathf.Max(alphaRotation, minRotation);
@@ -308,7 +267,6 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
     }
     void UpdateRedBeam()
     {
-        // Red beam reacts to nearby fragments based on alpha
         Vector3 totalInfluence = Vector3.zero;
         int influenceCount = 0;
 
@@ -327,7 +285,6 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
             }
         }
 
-        // Apply influence to red beam
         if (influenceCount > 0 && totalInfluence.magnitude > 0.1f)
         {
             FragmentPhysics beamPhysics = redBeam.GetComponent<FragmentPhysics>();
@@ -336,7 +293,6 @@ public class BrittleFractureSimulator : MonoBehaviour, IFragmentSimulator
                 beamPhysics = redBeam.gameObject.AddComponent<FragmentPhysics>();
                 beamPhysics.groundY = ground.position.y + ground.localScale.y * 0.5f;
                 beamPhysics.SetSimulator(this);
-                // REMOVED: beamPhysics.fragmentSize and meshType assignments
             }
 
             if (!beamPhysics.isGrounded)

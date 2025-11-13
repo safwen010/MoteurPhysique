@@ -717,7 +717,7 @@ MonoBehaviour:
   redBeam: {fileID: 1867652431}
   blueCube: {fileID: 356690328}
   yellowProjectile: {fileID: 269636520}
-  alpha: 2
+  alpha: 0
   fractureThreshold: 2
   baseFragmentSpeed: 5
   groundColor: {r: 1, g: 0.8, b: 0.2, a: 1}
